@@ -1,4 +1,4 @@
-# Quiet Quota · Windows-Beta 0.2.2
+# Quiet Quota · Windows-Beta 0.2.3
 
 Ein dezenter Hinweis auf das gemeinsame Wochenkontingent von ChatGPT Work und
 Codex. Die Prozentzahl bedeutet **verbraucht**, nicht verbleibend. Gewöhnliche
@@ -94,3 +94,7 @@ Offizielle Grundlagen (abgerufen am 19.10.2026):
 - Gemeinsame Work-/Codex-Limits: https://learn.chatgpt.com/docs/pricing
 - RPC und Rate-Limit-Felder: https://learn.chatgpt.com/docs/app-server
 - Qt-Fensterflags: https://doc.qt.io/qt-6/qt.html#WindowType-enum
+
+## Unterstützung
+
+Der kleine Ko-fi-Link unten in den Einstellungen öffnet die Unterstützungsseite nur beim Anklicken. Offene Änderungen bleiben erhalten. Das neue Q-Symbol erscheint im Fenstertitel und Tray; für Windows-Verknüpfungen liegt es unter `assets/quiet-quota.ico`.

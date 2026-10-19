@@ -9,15 +9,16 @@ import queue
 import sys
 import time
 
-from PySide6.QtCore import Qt, QPoint, QTimer, QPropertyAnimation, QEasingCurve, QLockFile, Signal
-from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap, QFont, QFontMetrics
+from PySide6.QtCore import Qt, QPoint, QTimer, QPropertyAnimation, QEasingCurve, QLockFile, Signal, QUrl
+from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap, QFont, QFontMetrics, QPen, QDesktopServices
 from PySide6.QtWidgets import (QApplication, QWidget, QSystemTrayIcon, QMenu,
     QDialog, QFormLayout, QLineEdit, QComboBox, QSpinBox, QCheckBox,
-    QDialogButtonBox, QMessageBox)
+    QDialogButtonBox, QMessageBox, QToolButton, QHBoxLayout)
 from quota_core import DEFAULTS, validate_config, atomic_json, ThresholdPolicy, Poller
 from i18n import LANGUAGES, CATALOGS, tr
 
 DATA = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "QuietQuota"
+KOFI_URL = "https://ko-fi.com/st0nks"
 
 
 def load_config():
@@ -194,6 +195,7 @@ class Settings(QDialog):
 
     def __init__(self, cfg):
         super().__init__()
+        self.setWindowIcon(tray_icon())
         self.setMinimumWidth(440)
         self.layout = QFormLayout(self)
         self.layout.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
@@ -228,7 +230,17 @@ class Settings(QDialog):
         self.buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
         self.buttons.accepted.connect(self.save)
         self.buttons.rejected.connect(self.reject)
-        self.layout.addRow(self.buttons)
+        self.support = QToolButton()
+        self.support.setText("Ko-fi ↗")
+        self.support.setAutoRaise(True)
+        self.support.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(KOFI_URL)))
+        footer = QWidget()
+        footer_layout = QHBoxLayout(footer)
+        footer_layout.setContentsMargins(0, 0, 0, 0)
+        footer_layout.addWidget(self.support)
+        footer_layout.addStretch()
+        footer_layout.addWidget(self.buttons)
+        self.layout.addRow(footer)
         self.language.currentIndexChanged.connect(self.retranslate)
         self.corner.currentIndexChanged.connect(self.preview)
         self.monitor.currentIndexChanged.connect(self.preview)
@@ -256,6 +268,8 @@ class Settings(QDialog):
         self.duration.setSuffix(" " + tr(lang, "seconds"))
         self.interval.setSuffix(" " + tr(lang, "minutes"))
         self.motion.setText(tr(lang, "slide"))
+        self.support.setAccessibleName(tr(lang, "support"))
+        self.support.setToolTip(tr(lang, "support") + "\n" + KOFI_URL)
         for standard, key in ((QDialogButtonBox.StandardButton.Save, "save"),
                               (QDialogButtonBox.StandardButton.Cancel, "cancel")):
             self.buttons.button(standard).setText(tr(lang, key))
@@ -278,17 +292,26 @@ class Settings(QDialog):
 
 
 def tray_icon(color="#70c6a3"):
-    pix = QPixmap(32, 32)
-    pix.fill(Qt.GlobalColor.transparent)
-    p = QPainter(pix)
-    p.setRenderHint(QPainter.RenderHint.Antialiasing)
-    p.setBrush(QColor("#22262b"))
-    p.setPen(Qt.PenStyle.NoPen)
-    p.drawRoundedRect(1, 1, 30, 30, 8, 8)
-    p.setBrush(QColor(color))
-    p.drawEllipse(10, 10, 12, 12)
-    p.end()
-    return QIcon(pix)
+    """A quota ring forming a Q, drawn at native sizes for crisp Windows icons."""
+    icon = QIcon()
+    for size in (16, 20, 24, 32, 48, 64, 128, 256):
+        pix = QPixmap(size, size)
+        pix.fill(Qt.GlobalColor.transparent)
+        p = QPainter(pix)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        p.scale(size / 32, size / 32)
+        p.setBrush(QColor("#22262b"))
+        p.setPen(Qt.PenStyle.NoPen)
+        p.drawRoundedRect(1, 1, 30, 30, 8, 8)
+        p.setBrush(Qt.BrushStyle.NoBrush)
+        p.setPen(QPen(QColor("#59616b"), 3.5, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+        p.drawEllipse(8, 7, 16, 16)
+        p.setPen(QPen(QColor(color), 3.5, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+        p.drawArc(8, 7, 16, 16, 90 * 16, 265 * 16)
+        p.drawLine(19, 20, 24, 25)
+        p.end()
+        icon.addPixmap(pix)
+    return icon
 
 
 class Controller:
@@ -444,6 +467,7 @@ def main():
     DATA.mkdir(parents=True, exist_ok=True)
     app = QApplication(sys.argv)
     app.setApplicationName("Quiet Quota")
+    app.setWindowIcon(tray_icon())
     app.setQuitOnLastWindowClosed(False)
     cfg, _ = load_config()
     lang = cfg["language"]

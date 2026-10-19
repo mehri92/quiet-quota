@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.3 beta
+
+- Add a discreet Ko-fi link to the Settings footer, with a translated tooltip.
+- Open the support page only on an explicit click, without saving or closing Settings.
+- Add a crisp quota-ring Q icon for the title bar and tray, plus a Windows shortcut ICO.
+
 ## 0.2.2 beta
 
 - Apply screen corner, monitor and animation changes immediately, alongside language.

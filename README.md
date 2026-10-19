@@ -8,7 +8,7 @@ no model inference. English by default, with eight interface languages.
 
 ![Quiet Quota demo popup showing example usage](docs/popup-en.png)
 
-**v0.2.2 beta · Windows · Python 3.10+ · MIT · Independent community project**
+**v0.2.3 beta · Windows · Python 3.10+ · MIT · Independent community project**
 
 Not affiliated with or endorsed by OpenAI, ChatGPT or Codex. This monitors the
 general Work/Codex quota exposed by Codex; it does not claim to track every
@@ -88,7 +88,8 @@ errors appear in the tray menu and retry with backoff, without popup spam.
 ## Start with Windows
 
 Create a shortcut to `Start.cmd`, open **Win+R → `shell:startup`**, and place the
-shortcut there. Keep the original application folder in place. Remove the shortcut
+shortcut there. Keep the original application folder in place. For a custom shortcut icon, open
+its Properties → Change Icon and select `assets/quiet-quota.ico`. Remove the shortcut
 to disable auto-start. A desktop shortcut works too.
 
 ## Update from v0.1
@@ -141,7 +142,9 @@ submitting changes. The core transport makes no inference requests during tests.
 ## Support
 
 The software is free. Bug reports, translation corrections and test results help.
-A voluntary support link can be added once the maintainer's Ko-fi page is ready.
+A small Ko-fi link in Settings opens the support page in your browser only when
+clicked. It never appears in quota alerts.
+If you find Quiet Quota useful, you can [leave an optional tip on Ko-fi](https://ko-fi.com/st0nks).
 There are no paid features or promised support tiers in this beta.
 
 ## License

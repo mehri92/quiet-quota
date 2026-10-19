@@ -40,6 +40,27 @@ class LocalizationTests(unittest.TestCase):
         self.assertEqual(validate_config({'language': 'unknown'})['language'], 'en')
         self.assertEqual(tr('unknown', 'settings'), 'Settings')
 
+    def test_support_requires_click_and_does_not_save_or_close(self):
+        with patch.object(ui.QDesktopServices, 'openUrl', return_value=True) as open_url:
+            dialog = ui.Settings(DEFAULTS.copy())
+            try:
+                dialog.show()
+                for language in LANGUAGES:
+                    dialog.language.setCurrentIndex(dialog.language.findData(language))
+                    self.app.processEvents()
+                    self.assertEqual(dialog.support.accessibleName(), tr(language, 'support'))
+                    self.assertFalse(dialog.windowIcon().isNull())
+                open_url.assert_not_called()
+                dialog.thresholds.setText('60, 85')
+                dialog.support.click()
+                open_url.assert_called_once()
+                self.assertEqual(open_url.call_args.args[0].toString(), 'https://ko-fi.com/st0nks')
+                self.assertTrue(dialog.isVisible())
+                self.assertFalse(hasattr(dialog, 'result_cfg'))
+                self.assertEqual(dialog.thresholds.text(), '60, 85')
+            finally:
+                dialog.close()
+
     def test_language_switch_preserves_edits_and_roundtrips(self):
         dialog = ui.Settings(DEFAULTS.copy())
         try:

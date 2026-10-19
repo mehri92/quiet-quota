@@ -6,6 +6,7 @@ LANGUAGES = {
 # Columns: key | English | German | Spanish | French | Portuguese | Italian | Japanese | Simplified Chinese
 _ROWS = r'''
 settings|Settings|Einstellungen|Ajustes|Paramètres|Configurações|Impostazioni|設定|设置
+support|Support on Ko-fi (opens your browser)|Auf Ko-fi unterstützen (öffnet den Browser)|Apoyar en Ko-fi (abre el navegador)|Soutenir sur Ko-fi (ouvre le navigateur)|Apoiar no Ko-fi (abre o navegador)|Sostieni su Ko-fi (apre il browser)|Ko-fiで応援（ブラウザーが開きます）|在 Ko-fi 上支持（打开浏览器）
 language|Language|Sprache|Idioma|Langue|Idioma|Lingua|言語|语言
 weekly_used|Weekly quota used|Wochenlimit verbraucht|Cuota semanal usada|Quota hebdo utilisé|Cota semanal usada|Quota settimanale usata|週間枠の使用率|每周额度已用
 demo|Demo|Demo|Demo|Démo|Demo|Demo|デモ|演示
