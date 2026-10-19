@@ -165,7 +165,7 @@ class CodexReader:
                 messages.put(None)
         threading.Thread(target=drain, daemon=True).start()
         self.rpc("initialize", {"clientInfo": {"name": "quiet_quota",
-                 "title": "Quiet Quota", "version": "0.3.1"}})
+                 "title": "Quiet Quota", "version": "0.3.2"}})
         self.send({"method": "initialized", "params": {}})
 
     def send(self, message):

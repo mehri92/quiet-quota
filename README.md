@@ -8,7 +8,7 @@ no model inference. English by default, with eight interface languages.
 
 ![Quiet Quota demo popup showing example usage](docs/popup-en.png)
 
-**v0.3.1 beta · Windows · Python 3.10+ · MIT · Independent community project**
+**v0.3.2 beta · Windows · Python 3.10+ · MIT · Independent community project**
 
 Not affiliated with or endorsed by OpenAI, ChatGPT or Codex. This monitors the
 general Work/Codex quota exposed by Codex; it does not claim to track every

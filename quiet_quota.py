@@ -13,7 +13,7 @@ from PySide6.QtCore import Qt, QPoint, QSize, QTimer, QPropertyAnimation, QEasin
 from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap, QFont, QFontMetrics, QPen, QDesktopServices
 from PySide6.QtWidgets import (QApplication, QWidget, QSystemTrayIcon, QMenu,
     QDialog, QFormLayout, QLineEdit, QComboBox, QSpinBox, QCheckBox,
-    QDialogButtonBox, QMessageBox, QToolButton, QHBoxLayout)
+    QDialogButtonBox, QMessageBox, QToolButton, QPushButton, QHBoxLayout)
 from quota_core import DEFAULTS, validate_config, atomic_json, ThresholdPolicy, Poller
 from i18n import LANGUAGES, CATALOGS, tr
 from connection_ui import ConnectionDialog
@@ -300,8 +300,15 @@ class Settings(QDialog):
         motion_layout.addStretch()
         motion_layout.addWidget(self.support)
         self.layout.addRow(" ", self.motion_row)
-        self.connection_button = QToolButton()
-        self.connection_button.setAutoRaise(True)
+        self.connection_button = QPushButton()
+        self.connection_button.setAutoDefault(False)
+        # Remove the native tool-button inset so the text lines up with the
+        # form labels above it, including Animation.
+        self.connection_button.setStyleSheet("""
+            QPushButton { border: none; padding: 3px 0px; background: transparent; text-align: left; }
+            QPushButton:hover, QPushButton:focus { background: palette(midlight); }
+            QPushButton:pressed { background: palette(mid); }
+        """)
         self.connection_button.clicked.connect(lambda: self.connection_requested.emit())
         footer = QWidget()
         footer_layout = QHBoxLayout(footer)

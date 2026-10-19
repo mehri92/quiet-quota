@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.2 beta
+
+- Align the Settings Connection action text with the form labels above it by
+  removing the native tool-button horizontal inset.
+
 ## 0.3.1 beta
 
 - Assign a stable Windows application identity before creating any windows so

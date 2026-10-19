@@ -1,4 +1,4 @@
-# Quiet Quota · Windows-Beta 0.3.1
+# Quiet Quota · Windows-Beta 0.3.2
 
 Ein dezenter Hinweis auf das gemeinsame Wochenkontingent von ChatGPT Work und
 Codex. Die Prozentzahl bedeutet **verbraucht**, nicht verbleibend. Gewöhnliche
