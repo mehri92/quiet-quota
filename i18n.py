@@ -22,7 +22,7 @@ seconds|seconds|Sekunden|segundos|secondes|segundos|secondi|秒|秒
 minutes|minutes|Minuten|minutos|minutes|minutos|minuti|分|分钟
 poll_every|Check usage every|Verbrauch abfragen alle|Consultar consumo cada|Vérifier l’utilisation toutes les|Consultar uso a cada|Controlla il consumo ogni|使用率の確認間隔|用量检查间隔
 animation|Animation|Animation|Animación|Animation|Animação|Animazione|アニメーション|动画
-slide|Gentle slide in and out|Sanft ein- und ausgleiten|Deslizamiento suave|Glissement doux|Deslizamento suave|Scorrimento delicato|滑らかに出入りする|柔和滑入滑出
+slide|Gentle slide in and out|Sanftes Gleiten|Deslizamiento suave|Glissement doux|Deslizamento suave|Scorrimento delicato|滑らかに出入りする|柔和滑入滑出
 save|Save|Speichern|Guardar|Enregistrer|Salvar|Salva|保存|保存
 cancel|Cancel|Abbrechen|Cancelar|Annuler|Cancelar|Annulla|キャンセル|取消
 ok|OK|OK|Aceptar|OK|OK|OK|OK|确定

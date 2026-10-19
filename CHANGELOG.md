@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.7 beta
+
+- Place the compact Ko-fi button at the right of the Animation row.
+- Show the coffee icon after the text and remove the extra support row.
+- Match the support button to the native Save/Cancel button size in each language.
+
 ## 0.2.6 beta
 
 - Restyle the Settings Ko-fi button with a coffee-cup icon and subtle rounded border.

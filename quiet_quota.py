@@ -13,7 +13,7 @@ from PySide6.QtCore import Qt, QPoint, QSize, QTimer, QPropertyAnimation, QEasin
 from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap, QFont, QFontMetrics, QPen, QDesktopServices
 from PySide6.QtWidgets import (QApplication, QWidget, QSystemTrayIcon, QMenu,
     QDialog, QFormLayout, QLineEdit, QComboBox, QSpinBox, QCheckBox,
-    QDialogButtonBox, QMessageBox, QToolButton, QVBoxLayout)
+    QDialogButtonBox, QMessageBox, QToolButton, QHBoxLayout)
 from quota_core import DEFAULTS, validate_config, atomic_json, ThresholdPolicy, Poller
 from i18n import LANGUAGES, CATALOGS, tr
 
@@ -247,24 +247,23 @@ class Settings(QDialog):
         self.layout.addRow(" ", self.interval)
         self.motion = QCheckBox()
         self.motion.setChecked(cfg["animations"])
-        self.layout.addRow(" ", self.motion)
         self.buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
         self.buttons.accepted.connect(self.save)
         self.buttons.rejected.connect(self.reject)
         self.support = QToolButton()
         self.support.setText("Ko-fi")
         self.support.setIcon(coffee_icon())
-        self.support.setIconSize(QSize(20, 20))
+        self.support.setIconSize(QSize(16, 16))
         self.support.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.support.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
         self.support.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.support.setMinimumWidth(94)
         self.support.setStyleSheet("""
             QToolButton {
                 color: palette(button-text);
                 background-color: rgba(223, 128, 111, 18);
                 border: 1px solid rgba(223, 128, 111, 95);
                 border-radius: 8px;
-                padding: 5px 10px;
+                padding: 2px 8px;
                 font-weight: 500;
             }
             QToolButton:hover { background-color: rgba(223, 128, 111, 38); }
@@ -272,13 +271,15 @@ class Settings(QDialog):
             QToolButton:focus { border: 1px solid #df806f; }
         """)
         self.support.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(KOFI_URL)))
-        footer = QWidget()
-        footer_layout = QVBoxLayout(footer)
-        footer_layout.setContentsMargins(0, 8, 0, 0)
-        footer_layout.setSpacing(10)
-        footer_layout.addWidget(self.support, 0, Qt.AlignmentFlag.AlignRight)
-        footer_layout.addWidget(self.buttons)
-        self.layout.addRow(footer)
+        self.motion_row = QWidget()
+        motion_layout = QHBoxLayout(self.motion_row)
+        motion_layout.setContentsMargins(0, 0, 0, 0)
+        motion_layout.setSpacing(8)
+        motion_layout.addWidget(self.motion)
+        motion_layout.addStretch()
+        motion_layout.addWidget(self.support)
+        self.layout.addRow(" ", self.motion_row)
+        self.layout.addRow(self.buttons)
         self.language.currentIndexChanged.connect(self.retranslate)
         self.corner.currentIndexChanged.connect(self.preview)
         self.monitor.currentIndexChanged.connect(self.preview)
@@ -299,7 +300,7 @@ class Settings(QDialog):
         for widget, key in ((self.language, "language"), (self.thresholds, "thresholds"),
                             (self.corner, "corner"), (self.monitor, "monitor"),
                             (self.duration, "visible_for"), (self.interval, "poll_every"),
-                            (self.motion, "animation")):
+                            (self.motion_row, "animation")):
             self.layout.labelForField(widget).setText(tr(lang, key))
         for i in range(self.corner.count()):
             self.corner.setItemText(i, tr(lang, self.corner.itemData(i)))
@@ -311,6 +312,8 @@ class Settings(QDialog):
         for standard, key in ((QDialogButtonBox.StandardButton.Save, "save"),
                               (QDialogButtonBox.StandardButton.Cancel, "cancel")):
             self.buttons.button(standard).setText(tr(lang, key))
+        button_size = self.buttons.button(QDialogButtonBox.StandardButton.Cancel).sizeHint()
+        self.support.setFixedSize(button_size)
         self.adjustSize()
         self.preview()
 
