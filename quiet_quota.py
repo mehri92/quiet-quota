@@ -16,9 +16,29 @@ from PySide6.QtWidgets import (QApplication, QWidget, QSystemTrayIcon, QMenu,
     QDialogButtonBox, QMessageBox, QToolButton, QHBoxLayout)
 from quota_core import DEFAULTS, validate_config, atomic_json, ThresholdPolicy, Poller
 from i18n import LANGUAGES, CATALOGS, tr
+from connection_ui import ConnectionDialog
 
 DATA = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "QuietQuota"
 KOFI_URL = "https://ko-fi.com/st0nks"
+WINDOWS_APP_ID = "mehri92.QuietQuota"
+
+
+def set_taskbar_identity():
+    """Give Windows our own taskbar group before Qt creates any windows."""
+    if sys.platform != "win32":
+        return
+    try:
+        set_app_id = ctypes.WinDLL("shell32").SetCurrentProcessExplicitAppUserModelID
+        set_app_id.argtypes = [ctypes.c_wchar_p]
+        set_app_id.restype = ctypes.c_long
+        result = set_app_id(WINDOWS_APP_ID)
+        if result != 0:
+            raise OSError(f"SetCurrentProcessExplicitAppUserModelID failed: {result:#x}")
+    except (OSError, AttributeError) as error:
+        # Icon setup must not prevent quota monitoring. Diagnostics.cmd captures
+        # this warning; pythonw may have no stderr stream.
+        if sys.stderr is not None:
+            print(f"Quiet Quota taskbar identity: {error}", file=sys.stderr)
 
 
 def load_config():
@@ -213,6 +233,7 @@ def coffee_icon():
 
 class Settings(QDialog):
     presentation_changed = Signal(dict)
+    connection_requested = Signal()
 
     def __init__(self, cfg):
         super().__init__()
@@ -279,7 +300,16 @@ class Settings(QDialog):
         motion_layout.addStretch()
         motion_layout.addWidget(self.support)
         self.layout.addRow(" ", self.motion_row)
-        self.layout.addRow(self.buttons)
+        self.connection_button = QToolButton()
+        self.connection_button.setAutoRaise(True)
+        self.connection_button.clicked.connect(lambda: self.connection_requested.emit())
+        footer = QWidget()
+        footer_layout = QHBoxLayout(footer)
+        footer_layout.setContentsMargins(0, 0, 0, 0)
+        footer_layout.addWidget(self.connection_button)
+        footer_layout.addStretch()
+        footer_layout.addWidget(self.buttons)
+        self.layout.addRow(footer)
         self.language.currentIndexChanged.connect(self.retranslate)
         self.corner.currentIndexChanged.connect(self.preview)
         self.monitor.currentIndexChanged.connect(self.preview)
@@ -309,6 +339,7 @@ class Settings(QDialog):
         self.motion.setText(tr(lang, "slide"))
         self.support.setAccessibleName(tr(lang, "support"))
         self.support.setToolTip(tr(lang, "support") + "\n" + KOFI_URL)
+        self.connection_button.setText(tr(lang, "connection") + " …")
         for standard, key in ((QDialogButtonBox.StandardButton.Save, "save"),
                               (QDialogButtonBox.StandardButton.Cancel, "cancel")):
             self.buttons.button(standard).setText(tr(lang, key))
@@ -370,6 +401,10 @@ class Controller:
         self.events = queue.Queue()
         self.latest, self.identity, self.last_success = None, None, 0
         self.paused = False
+        self.connection_dialog = None
+        self.onboarding_offered = False
+        self.retired_workers = []
+        self.shutting_down = False
         self.cfg, self.error_key = load_config()
         self.policy = ThresholdPolicy(DATA / "state.json")
         self.toast = Toast(self.cfg)
@@ -389,6 +424,7 @@ class Controller:
         self.pause_action.setCheckable(True)
         self.pause_action.toggled.connect(self.pause)
         self.settings_action = self.menu.addAction("", self.settings)
+        self.connection_action = self.menu.addAction("", self.connect_account)
         self.menu.addSeparator()
         self.quit_action = self.menu.addAction("", app.quit)
         self.tray.setContextMenu(self.menu)
@@ -413,6 +449,7 @@ class Controller:
             action.setText(tr(lang, "test_popup", value=value))
         self.pause_action.setText(tr(lang, "pause"))
         self.settings_action.setText(tr(lang, "settings") + " …")
+        self.connection_action.setText(tr(lang, "connection") + " …")
         self.quit_action.setText(tr(lang, "quit"))
         self.refresh_status()
 
@@ -462,6 +499,10 @@ class Controller:
             if event[0] == "error":
                 self.error_key = event[1] if event[1] in CATALOGS["en"] else "connection_failed"
                 self.refresh_status()
+                if (not self.demo and not self.onboarding_offered and
+                        self.error_key in ("missing_cli", "missing_entry", "sign_in")):
+                    self.onboarding_offered = True
+                    QTimer.singleShot(0, self.connect_account)
                 continue
             _, self.identity, self.latest = event
             self.error_key = None
@@ -491,6 +532,7 @@ class Controller:
         original = self.cfg.copy()
         dialog = Settings(self.cfg)
         dialog.presentation_changed.connect(self.preview_settings)
+        dialog.connection_requested.connect(lambda: self.connect_account(dialog))
         if dialog.exec() == QDialog.DialogCode.Accepted:
             try:
                 atomic_json(DATA/"settings.json", dialog.result_cfg)
@@ -505,17 +547,55 @@ class Controller:
         else:
             self.preview_settings(original)
 
-    def shutdown(self):
-        self.tray.hide()
+    def connect_account(self, parent=None):
+        if self.connection_dialog is not None:
+            self.connection_dialog.raise_()
+            self.connection_dialog.activateWindow()
+            return
+        self.onboarding_offered = True
+        # A new queue isolates any late reply from the previous account reader.
+        # Stop it without blocking the UI, then resume with a fresh process.
+        self.retired_workers = [w for w in self.retired_workers if w.is_alive()]
         if self.worker:
             self.worker.stop()
+            self.retired_workers.append(self.worker)
+            self.worker = None
+        self.events = queue.Queue()
+        self.toast.hide()
+        dialog = ConnectionDialog(self.cfg["language"], parent if isinstance(parent, QWidget) else None)
+        self.connection_dialog = dialog
+        dialog.usage_ready.connect(self.connection_ready)
+        try:
+            dialog.exec()
+        finally:
+            dialog.shutdown()
+            dialog.deleteLater()
+            self.connection_dialog = None
+            if not self.demo and not self.shutting_down:
+                self.worker = Poller(self.events, self.cfg["poll_seconds"])
+                self.worker.start()
+
+    def connection_ready(self, identity, snapshot):
+        self.demo = False
+        self.events.put(("usage", identity, snapshot))
+
+    def shutdown(self):
+        self.shutting_down = True
+        self.tray.hide()
+        if self.connection_dialog:
+            self.connection_dialog.shutdown()
+        workers = self.retired_workers + ([self.worker] if self.worker else [])
+        for worker in workers:
+            worker.stop()
+        for worker in workers:
             # A normal request has a bounded 25 s timeout; daemon exit must not
             # orphan app-server. Wait while exiting, never during normal use.
-            self.worker.join(timeout=60)
+            worker.join(timeout=15)
 
 
 def main():
     DATA.mkdir(parents=True, exist_ok=True)
+    set_taskbar_identity()
     app = QApplication(sys.argv)
     app.setApplicationName("Quiet Quota")
     app.setWindowIcon(tray_icon())

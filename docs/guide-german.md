@@ -1,4 +1,4 @@
-# Quiet Quota · Windows-Beta 0.2.3
+# Quiet Quota · Windows-Beta 0.3.1
 
 Ein dezenter Hinweis auf das gemeinsame Wochenkontingent von ChatGPT Work und
 Codex. Die Prozentzahl bedeutet **verbraucht**, nicht verbleibend. Gewöhnliche
@@ -24,20 +24,29 @@ Bildschirmecke, Monitor und Animation wirken ebenfalls sofort; Abbrechen stellt 
 4. `Demo.cmd` zeigt ein Beispiel mit 67 %. Rechtsklick auf das kleine Symbol neben
    der Uhr öffnet Einstellungen und weitere Tests. Das Symbol kann im ausgeklappten
    Infobereich unter dem Pfeil liegen. Demo danach über **Beenden** schließen.
-5. Für echte Werte muss die **native Windows-Codex-CLI** verfügbar und mit demselben
-   ChatGPT-Konto / Workspace wie deine Work-Nutzung angemeldet sein. Die Codex-App
-   allein garantiert nicht, dass die CLI im PATH liegt. Eine Installation nur in WSL
-   wird von dieser Version nicht verwendet.
-   Offizielle Anleitung: https://developers.openai.com/codex/cli/
-   Bei installiertem Node.js: `npm install -g @openai/codex`, danach `codex login`
-   und mit ChatGPT anmelden. Ein API-Key liefert dieses Abo-Wochenkontingent nicht.
-6. `Start.cmd` startet die Live-Abfrage. Beim ersten erfolgreichen Abruf wird
-   der aktuelle Verbrauch still als Ausgangsstand übernommen. Über das Tray-Menü
-   kannst du ihn jederzeit anzeigen. Der nächste Schwellenübertritt löst einen Hinweis aus.
+5. `Start.cmd` startet die Live-Abfrage. Fehlen Codex oder die Anmeldung, öffnet
+   sich das Verbindungsfenster. Es ist auch über **Verbindung** im Tray-Menü oder
+   unten links in den Einstellungen erreichbar.
+6. Fehlt die native Windows-Codex-CLI, öffne die Installationsanleitung im
+   Verbindungsfenster. Installiere sie und klicke auf **Erneut prüfen**. Wird sie
+   weiterhin nicht erkannt, starte Quiet Quota neu. Die Desktop-App allein oder
+   eine Installation nur in WSL genügt möglicherweise nicht.
+7. Klicke auf **Mit ChatGPT verbinden** und melde dich im Browser an. Codex
+   übernimmt die Anmeldung und Speicherung der Zugangsdaten. Quiet Quota fragt
+   weder nach deinem Passwort noch nach einem API-Key.
+8. Warte auf **Verbunden · …% diese Woche verbraucht** und schließe das Fenster.
+   Eine erfolgreiche Anmeldung ohne abrufbares Wochenlimit wird gesondert angezeigt.
+   Der erste Abruf setzt still den Ausgangsstand; die nächste Schwelle löst den Hinweis aus.
+
+Vorhandene Codex-Anmeldungen werden automatisch genutzt. **Erneut anmelden** kann
+auch das Konto deiner lokalen Codex CLI ändern. Abbrechen beendet eine laufende
+Anmeldung, meldet ein bestehendes Konto aber nicht ab. Eine Anmeldung läuft nach
+fünf Minuten ab und kann wiederholt werden. Erfolgreiches Verbinden aus der Demo
+wechselt direkt zur Live-Abfrage.
 
 Wenn kein Symbol erscheint: `Diagnostics.cmd` starten und die sichtbare Fehlermeldung
-prüfen. Bei Abfrageproblemen steht die Ursache im Tray-Menü. Es gibt dafür keine
-automatischen Fehler-Popups. Zum Beenden das Tray-Menü verwenden.
+prüfen. Bei Abfrageproblemen steht die Ursache im Tray-Menü. Fehlende Installation oder Anmeldung öffnet die Verbindungshilfe einmal pro Start;
+sonstige Abfragefehler erzeugen keine wiederholten Popups. Zum Beenden das Tray-Menü verwenden.
 
 ## Verhalten
 
@@ -64,8 +73,9 @@ automatischen Fehler-Popups. Zum Beenden das Tray-Menü verwenden.
 ## Datenquelle und Privatsphäre
 
 Das Tool startet einen eigenen `codex app-server` über lokale Standard-Ein-/Ausgabe.
-Es liest ausschließlich `account/read` und `account/rateLimits/read` nach dem
-Protokoll-Handshake. Es startet keine Chats, Prompts oder Modell-Inferenz und
+Es liest `account/read` und `account/rateLimits/read` nach dem
+Protokoll-Handshake. Bei ausdrücklich gestarteter Anmeldung verwendet es außerdem
+`account/login/start` und bei Abbruch `account/login/cancel`. Es startet keine Chats, Prompts oder Modell-Inferenz und
 benötigt weder eine lokale KI noch GPU-Rechenleistung. Codex übernimmt Anmeldung
 und die Verbindung zum Dienst. Das Tool liest keine Browser-Cookies oder Token-Dateien.
 

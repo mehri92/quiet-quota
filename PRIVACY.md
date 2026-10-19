@@ -2,12 +2,19 @@
 
 Quiet Quota's own code has no telemetry, analytics, advertising or remote logging.
 It starts a local Codex app-server over stdin/stdout and calls `initialize`,
-`account/read` and `account/rateLimits/read`. It sends no chat messages, creates
+`account/read` and `account/rateLimits/read`. During explicit browser sign-in, it
+also calls `account/login/start` and, if needed, `account/login/cancel`. It sends no chat messages, creates
 no threads and performs no model inference. Unexpected server-initiated requests
 are rejected. Codex itself connects to its service under its own settings/policies.
 
 Quiet Quota does not read browser cookies or Codex credential files. Your existing
-Codex CLI manages its own authentication. Keep it signed in to the intended account.
+Codex CLI manages its own authentication, including the browser callback and
+credential storage. Only official HTTPS authentication URLs on `auth.openai.com`
+or `chatgpt.com` are opened. Pending URLs are held in memory, never logged or saved.
+The Connection window displays the signed-in email in memory to identify the account.
+Signing in again may also change the account used by your independent Codex CLI.
+Cancelling login does not log out an existing account. The installation-guide
+button opens an official documentation page; it does not run a downloaded installer.
 
 Local files under `%LOCALAPPDATA%\QuietQuota` contain settings, notification history
 and a single-instance lock. History uses a hash of the returned account metadata;
@@ -16,7 +23,8 @@ of anonymity. The running process receives account data in memory to identify th
 current quota state. Raw RPC errors and authentication data are not logged by the app.
 
 Quitting terminates only the dedicated app-server process tree started by Quiet
-Quota. Pausing notifications does not stop polling. No Windows auto-start entry
+Quota. The connection window temporarily stops background polling and resumes
+with a fresh reader when closed. Pausing notifications does not stop polling. No Windows auto-start entry
 is created automatically. To remove the app, quit it, remove any shortcuts you
 created, and delete its application folder. Remove the local data folder too if
 you want to erase settings/history. This does not remove your independent Codex CLI.

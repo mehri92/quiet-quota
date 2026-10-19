@@ -8,7 +8,7 @@ no model inference. English by default, with eight interface languages.
 
 ![Quiet Quota demo popup showing example usage](docs/popup-en.png)
 
-**v0.2.7 beta · Windows · Python 3.10+ · MIT · Independent community project**
+**v0.3.1 beta · Windows · Python 3.10+ · MIT · Independent community project**
 
 Not affiliated with or endorsed by OpenAI, ChatGPT or Codex. This monitors the
 general Work/Codex quota exposed by Codex; it does not claim to track every
@@ -25,7 +25,8 @@ ChatGPT model or feature limit.
 - The tray Q ring shows **quota remaining**: 42% used means 58% of the ring is
   coloured. It shrinks as usage increases and refills after a quota reset is read.
   The Q tail keeps the warning colour even at 100% used. Waiting or unavailable
-  readings show a neutral grey icon; title-bar and shortcut icons keep the brand mark.
+  readings show a neutral grey icon; title-bar, taskbar and shortcut icons keep
+  the original static mint Q brand mark.
   Popup percentages still mean **used**. Test popups do not alter the live tray icon.
 - Each threshold is notified once per quota period, remembered across restarts.
 - Jumping across several thresholds produces one popup with the current value.
@@ -70,23 +71,36 @@ This beta is a source distribution, **not a standalone EXE**.
 
 ## Connect live usage
 
-Install the **native Windows Codex CLI**, available on `PATH`, and sign in to the
-same ChatGPT account/workspace you use for Work/Codex.
-See the [official Codex CLI guide](https://developers.openai.com/codex/cli/).
-With Node.js installed, the usual setup is:
+1. Run **`Start.cmd`**. If Codex or a ChatGPT sign-in is missing, a connection
+   window opens automatically. You can also open **Connection** from the tray
+   menu or the bottom left of Settings.
+2. If needed, choose **Open Codex installation guide**, install the native
+   Windows Codex CLI, then **Check again**. Restart Quiet Quota if it still cannot
+   find the installation. The guide opens in your browser; Quiet Quota does not
+   run installers automatically. A WSL-only CLI is not supported, and the desktop
+   app alone may not provide a CLI.
+3. Choose **Connect with ChatGPT** and complete the official sign-in in your
+   browser. Codex owns the login and stores its credentials; Quiet Quota never
+   asks for your password or an API key. Keep the connection window open while
+   signing in. **Open sign-in page again** retries opening the browser if needed.
+4. Wait for **Connected · …% used this week**, then close the window. This confirms
+   a real weekly quota was read. A successful login without weekly data is shown
+   separately and does not claim that monitoring is ready.
 
-```powershell
-npm install -g @openai/codex
-codex login
-```
+Existing Codex logins are reused automatically. **Sign in again** uses the same
+local Codex credentials and may change the account used by Codex itself.
+Cancelling stops the pending login; it does not log out an already signed-in account.
+Authentication times out after five minutes and can be retried.
 
-Use ChatGPT sign-in, not an API key. A CLI installed only inside WSL is not used
-by this version. Installing the desktop app alone does not guarantee that the
-CLI is available on `PATH`.
+Connecting successfully from demo mode switches Quiet Quota to live monitoring.
+No model prompt or inference is used to verify access. **Show current usage** in
+the tray displays the live value; test popups use example data. The first live
+reading establishes a silent baseline, so it does not produce an immediate alert.
 
-Run **`Start.cmd`**. Open the tray menu to check your actual percentage and reset
-time; choose **Show current usage** to display it. A test popup uses example data
-and **does not prove the live connection works**. The first live reading is silent.
+See the [official Codex CLI guide](https://developers.openai.com/codex/cli/) and
+[account authentication protocol](https://learn.chatgpt.com/docs/app-server#authentication-endpoints).
+
+![Connection window before browser sign-in](docs/connection-en.png)
 
 If the icon does not appear, use **`Diagnostics.cmd`** to see startup errors. Connection
 errors appear in the tray menu and retry with backoff, without popup spam.
@@ -124,14 +138,18 @@ See [PRIVACY.md](PRIVACY.md) for local storage and process details.
 ## Beta test status
 
 - The original popup was tested by the maintainer on Windows and behaved as intended.
-- Automated tests cover thresholds, restarts, resets, deferral, parsing and a mocked
-  read-only JSONL transport; localisation tests cover all eight languages.
+- Automated tests cover thresholds, restarts, resets, deferral, parsing and mocked
+  JSONL usage/authentication transport. Sign-in checks cover cancellation, timeout,
+  unrelated login events, URL validation, failures and stale-account isolation.
+  Localisation tests cover all eight languages.
 - Qt rendering and UI behaviour are exercised offscreen. This is not a replacement
   for Windows focus, DPI, multi-monitor, font-fallback and fullscreen tests.
 - The new multilingual build and a real account's automatic threshold crossing /
   weekly reset still need end-to-end verification. Live account integration is not
   claimed to be verified merely because the demo works.
 - Memory use of Qt plus the Codex child process has not been benchmarked.
+- Browser sign-in is tested with a simulated local app-server, not a real account.
+  The first real Windows browser login still needs a maintainer test.
 
 ## Development
 

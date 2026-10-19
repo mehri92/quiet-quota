@@ -30,7 +30,7 @@ class LocalizationTests(unittest.TestCase):
                 for key, value in CATALOGS[language].items():
                     self.assertTrue(value.strip())
                     self.assertEqual(fields(value), fields(CATALOGS['en'][key]))
-                    tr(language, key, value=100, date='2026-10-26 12:00')
+                    tr(language, key, value=100, date='2026-10-26 12:00', email='test@example.invalid')
 
     def test_old_settings_and_unknown_languages(self):
         old = {k: v for k, v in DEFAULTS.items() if k != 'language'}

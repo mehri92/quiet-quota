@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.3.1 beta
+
+- Assign a stable Windows application identity before creating any windows so
+  the taskbar uses Quiet Quota's static mint Q instead of the Python identity.
+- Keep the quota-dependent ring and colours exclusive to the tray icon.
+
+## 0.3.0 beta
+
+- Add a guided connection window, offered automatically when Codex or sign-in is missing.
+- Add Connection actions to the tray and Settings without adding a Settings row.
+- Launch Codex-managed ChatGPT browser sign-in only on an explicit click.
+- Confirm connection only after reading weekly quota; distinguish login from quota availability.
+- Support retries, browser reopening, cancellation and a five-minute login timeout.
+- Reuse existing credentials; restart the quota reader after connecting to avoid stale account data.
+- Translate the flow into all eight languages and add authentication/UI regression tests.
+
 ## 0.2.7 beta
 
 - Place the compact Ko-fi button at the right of the Animation row.

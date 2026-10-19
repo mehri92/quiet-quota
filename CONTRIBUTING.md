@@ -2,6 +2,7 @@
 
 Please keep the app quiet, small and read-only. New features must not send prompts,
 read credential files or automatically change a user's Codex configuration.
+Browser authentication must be explicitly started by the user and owned by Codex.
 
 Run `python -m unittest discover -v`. UI tests use Qt's offscreen platform by default.
 For a Windows bug, include OS/Python/Codex versions, monitor scaling and minimal

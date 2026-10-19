@@ -13,7 +13,8 @@ if errorlevel 1 goto fail
 if errorlevel 1 goto fail
 echo.
 echo Setup complete. Run Demo.cmd to test the popup, or Start.cmd for live usage.
-echo Live mode needs the Windows Codex CLI signed in with ChatGPT.
+echo Start.cmd will guide you through connecting your ChatGPT account.
+echo The Windows Codex CLI is required; the connection window links to its installation guide.
 pause
 exit /b 0
 :fail
