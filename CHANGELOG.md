@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.6 beta
+
+- Restyle the Settings Ko-fi button with a coffee-cup icon and subtle rounded border.
+- Place support on its own row above Cancel, aligned to the right.
+
 ## 0.2.5 beta
 
 - Change tray and popup colours to yellow at 50% remaining and red at 20% remaining.

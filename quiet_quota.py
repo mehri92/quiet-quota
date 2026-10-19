@@ -9,11 +9,11 @@ import queue
 import sys
 import time
 
-from PySide6.QtCore import Qt, QPoint, QTimer, QPropertyAnimation, QEasingCurve, QLockFile, Signal, QUrl
+from PySide6.QtCore import Qt, QPoint, QSize, QTimer, QPropertyAnimation, QEasingCurve, QLockFile, Signal, QUrl
 from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap, QFont, QFontMetrics, QPen, QDesktopServices
 from PySide6.QtWidgets import (QApplication, QWidget, QSystemTrayIcon, QMenu,
     QDialog, QFormLayout, QLineEdit, QComboBox, QSpinBox, QCheckBox,
-    QDialogButtonBox, QMessageBox, QToolButton, QHBoxLayout)
+    QDialogButtonBox, QMessageBox, QToolButton, QVBoxLayout)
 from quota_core import DEFAULTS, validate_config, atomic_json, ThresholdPolicy, Poller
 from i18n import LANGUAGES, CATALOGS, tr
 
@@ -190,6 +190,27 @@ class Toast(QWidget):
         p.end()
 
 
+def coffee_icon():
+    """A small cup drawn locally at native sizes, without font or image dependencies."""
+    icon = QIcon()
+    for size in (16, 20, 24, 32, 40, 48):
+        pix = QPixmap(size, size)
+        pix.fill(Qt.GlobalColor.transparent)
+        p = QPainter(pix)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        p.scale(size / 20, size / 20)
+        p.setPen(QPen(QColor("#df806f"), 1.6, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+        p.setBrush(Qt.BrushStyle.NoBrush)
+        p.drawArc(12, 7, 6, 6, -90 * 16, 180 * 16)
+        p.drawRoundedRect(3, 7, 11, 9, 2, 2)
+        p.drawLine(2, 18, 16, 18)
+        p.drawLine(6, 2, 6, 4)
+        p.drawLine(10, 2, 10, 4)
+        p.end()
+        icon.addPixmap(pix)
+    return icon
+
+
 class Settings(QDialog):
     presentation_changed = Signal(dict)
 
@@ -231,14 +252,31 @@ class Settings(QDialog):
         self.buttons.accepted.connect(self.save)
         self.buttons.rejected.connect(self.reject)
         self.support = QToolButton()
-        self.support.setText("Ko-fi ↗")
-        self.support.setAutoRaise(True)
+        self.support.setText("Ko-fi")
+        self.support.setIcon(coffee_icon())
+        self.support.setIconSize(QSize(20, 20))
+        self.support.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.support.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.support.setMinimumWidth(94)
+        self.support.setStyleSheet("""
+            QToolButton {
+                color: palette(button-text);
+                background-color: rgba(223, 128, 111, 18);
+                border: 1px solid rgba(223, 128, 111, 95);
+                border-radius: 8px;
+                padding: 5px 10px;
+                font-weight: 500;
+            }
+            QToolButton:hover { background-color: rgba(223, 128, 111, 38); }
+            QToolButton:pressed { background-color: rgba(223, 128, 111, 62); }
+            QToolButton:focus { border: 1px solid #df806f; }
+        """)
         self.support.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(KOFI_URL)))
         footer = QWidget()
-        footer_layout = QHBoxLayout(footer)
-        footer_layout.setContentsMargins(0, 0, 0, 0)
-        footer_layout.addWidget(self.support)
-        footer_layout.addStretch()
+        footer_layout = QVBoxLayout(footer)
+        footer_layout.setContentsMargins(0, 8, 0, 0)
+        footer_layout.setSpacing(10)
+        footer_layout.addWidget(self.support, 0, Qt.AlignmentFlag.AlignRight)
         footer_layout.addWidget(self.buttons)
         self.layout.addRow(footer)
         self.language.currentIndexChanged.connect(self.retranslate)
