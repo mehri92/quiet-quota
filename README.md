@@ -8,7 +8,7 @@ no model inference. English by default, with eight interface languages.
 
 ![Quiet Quota demo popup showing example usage](docs/popup-en.png)
 
-**v0.2.3 beta · Windows · Python 3.10+ · MIT · Independent community project**
+**v0.2.5 beta · Windows · Python 3.10+ · MIT · Independent community project**
 
 Not affiliated with or endorsed by OpenAI, ChatGPT or Codex. This monitors the
 general Work/Codex quota exposed by Codex; it does not claim to track every
@@ -19,8 +19,14 @@ ChatGPT model or feature limit.
 ## What it does
 
 - Alerts at **50%, 75%, 90% and 95% used** by default. Set your own thresholds.
-- Green below 75%, amber from 75%, red from 90%. These colour boundaries remain
+- Green above 50% remaining, yellow at 50% remaining or less, red at 20% remaining
+  or less (50% and 80% used). These colour boundaries remain
   fixed even if you customise the alert thresholds.
+- The tray Q ring shows **quota remaining**: 42% used means 58% of the ring is
+  coloured. It shrinks as usage increases and refills after a quota reset is read.
+  The Q tail keeps the warning colour even at 100% used. Waiting or unavailable
+  readings show a neutral grey icon; title-bar and shortcut icons keep the brand mark.
+  Popup percentages still mean **used**. Test popups do not alter the live tray icon.
 - Each threshold is notified once per quota period, remembered across restarts.
 - Jumping across several thresholds produces one popup with the current value.
 - Starts silently: your first successful reading establishes the baseline.
@@ -58,7 +64,7 @@ This beta is a source distribution, **not a standalone EXE**.
    with the Python launcher (`py`).
 3. Run **`Setup.cmd`**. It creates a local `.venv` and installs PySide6 from PyPI.
    No administrator access is required.
-4. Run **`Demo.cmd`**. Find the dark tray icon with a coloured dot, possibly under
+4. Run **`Demo.cmd`**. Find the dark tray icon with a Q ring, possibly under
    the hidden-icons arrow next to the clock. Right-click for test popups and settings.
 5. Quit the demo before starting live mode: only one instance runs at a time.
 

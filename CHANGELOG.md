@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.5 beta
+
+- Change tray and popup colours to yellow at 50% remaining and red at 20% remaining.
+- Keep configurable popup alert thresholds unchanged.
+
+## 0.2.4 beta
+
+- Make the tray Q ring proportional to remaining weekly quota, with a full ring at
+  0% used and an empty ring at 100% used; keep the Q tail visible in the status colour.
+- Keep green/amber/red based on usage, updating the ring on each successful reading.
+- Show a neutral grey icon while waiting for data or when usage is unavailable.
+- Keep title-bar and shortcut branding unchanged; test popups preserve the live icon.
+
 ## 0.2.3 beta
 
 - Add a discreet Ko-fi link to the Settings footer, with a translated tooltip.

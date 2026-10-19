@@ -52,7 +52,7 @@ def notification_blocked():
 
 
 def color_for(used):
-    return "#ef7d84" if used >= 90 else "#e5bc68" if used >= 75 else "#70c6a3"
+    return "#ef7d84" if used >= 80 else "#e5bc68" if used >= 50 else "#70c6a3"
 
 
 class Toast(QWidget):
@@ -291,8 +291,9 @@ class Settings(QDialog):
         self.accept()
 
 
-def tray_icon(color="#70c6a3"):
-    """A quota ring forming a Q, drawn at native sizes for crisp Windows icons."""
+def tray_icon(color="#70c6a3", used=None):
+    """Draw the Q with remaining quota; no reading keeps the static brand mark."""
+    remaining = None if used is None else 1 - max(0, min(100, used)) / 100
     icon = QIcon()
     for size in (16, 20, 24, 32, 48, 64, 128, 256):
         pix = QPixmap(size, size)
@@ -307,7 +308,15 @@ def tray_icon(color="#70c6a3"):
         p.setPen(QPen(QColor("#59616b"), 3.5, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
         p.drawEllipse(8, 7, 16, 16)
         p.setPen(QPen(QColor(color), 3.5, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
-        p.drawArc(8, 7, 16, 16, 90 * 16, 265 * 16)
+        if remaining is None:
+            p.drawArc(8, 7, 16, 16, 90 * 16, 265 * 16)
+        elif remaining == 1:
+            p.drawEllipse(8, 7, 16, 16)
+        elif remaining > 0:
+            # Flat ends preserve the proportion, especially near an empty ring.
+            p.setPen(QPen(QColor(color), 3.5, Qt.PenStyle.SolidLine, Qt.PenCapStyle.FlatCap))
+            p.drawArc(8, 7, 16, 16, 90 * 16, -round(360 * 16 * remaining))
+        p.setPen(QPen(QColor(color), 3.5, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
         p.drawLine(19, 20, 24, 25)
         p.end()
         icon.addPixmap(pix)
@@ -323,7 +332,7 @@ class Controller:
         self.cfg, self.error_key = load_config()
         self.policy = ThresholdPolicy(DATA / "state.json")
         self.toast = Toast(self.cfg)
-        self.tray = QSystemTrayIcon(tray_icon(), app)
+        self.tray = QSystemTrayIcon(tray_icon("#a3aab3", used=100), app)
         self.menu = QMenu()
         self.status = self.menu.addAction("")
         self.status.setEnabled(False)
@@ -372,18 +381,19 @@ class Controller:
             self.status.setText(tr(lang, "unavailable"))
             self.reset.setText(tr(lang, self.error_key))
             self.tray.setToolTip("Quiet Quota · " + tr(lang, self.error_key))
-            self.tray.setIcon(tray_icon("#a3aab3"))
+            self.tray.setIcon(tray_icon("#a3aab3", used=100))
         elif self.latest:
             used = self.latest["used"]
             self.status.setText(tr(lang, "usage_status", value=math.floor(used)))
             self.reset.setText(tr(lang, "reset_at", date=datetime.fromtimestamp(
                 self.latest["reset"]).strftime("%Y-%m-%d %H:%M")))
             self.tray.setToolTip("Quiet Quota · " + self.status.text())
-            self.tray.setIcon(tray_icon(color_for(used)))
+            self.tray.setIcon(tray_icon(color_for(used), used=used))
         else:
             self.status.setText(tr(lang, "demo_mode" if self.demo else "checking"))
             self.reset.setText(tr(lang, "no_data"))
             self.tray.setToolTip("Quiet Quota · " + self.status.text())
+            self.tray.setIcon(tray_icon("#a3aab3", used=100))
 
     def pause(self, value):
         self.paused = value

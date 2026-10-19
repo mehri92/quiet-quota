@@ -40,6 +40,36 @@ class LocalizationTests(unittest.TestCase):
         self.assertEqual(validate_config({'language': 'unknown'})['language'], 'en')
         self.assertEqual(tr('unknown', 'settings'), 'Settings')
 
+    def test_tray_ring_shows_remaining_quota_and_retains_warning_tail(self):
+        # Inspect ring centres away from anti-aliased edges and the Q tail.
+        points = [(96, 60), (64, 92), (32, 60), (64, 28)]
+        full = ui.tray_icon(ui.color_for(0), used=0).pixmap(128).toImage()
+        empty = ui.tray_icon(ui.color_for(100), used=100).pixmap(128).toImage()
+        half = ui.tray_icon(ui.color_for(50), used=50).pixmap(128).toImage()
+        for x, y in points:
+            self.assertEqual(full.pixelColor(x, y).name(), '#70c6a3')
+            self.assertEqual(empty.pixelColor(x, y).name(), '#59616b')
+        self.assertEqual(half.pixelColor(96, 60).name(), '#e5bc68')
+        self.assertEqual(half.pixelColor(32, 60).name(), '#59616b')
+        self.assertEqual(empty.pixelColor(92, 96).name(), '#ef7d84')
+
+    def test_live_tray_tracks_readings_and_reset_and_clears_stale_ring(self):
+        from unittest.mock import Mock
+        controller = SimpleNamespace(cfg=DEFAULTS.copy(), error_key=None,
+            latest=None, demo=False, status=Mock(), reset=Mock(), tray=Mock())
+        controller.status.text.return_value = 'Usage status'
+        for used in (0, 49.99, 50, 79.99, 80, 100, 0):
+            controller.latest = {'used': used, 'reset': 1800000000}
+            ui.Controller.refresh_status(controller)
+            actual = controller.tray.setIcon.call_args.args[0].pixmap(32).toImage()
+            expected = ui.tray_icon(ui.color_for(used), used=used).pixmap(32).toImage()
+            self.assertEqual(actual, expected)
+        for error, latest in (('no_data', controller.latest), (None, None)):
+            controller.error_key, controller.latest = error, latest
+            ui.Controller.refresh_status(controller)
+            actual = controller.tray.setIcon.call_args.args[0].pixmap(32).toImage()
+            self.assertEqual(actual, ui.tray_icon('#a3aab3', used=100).pixmap(32).toImage())
+
     def test_support_requires_click_and_does_not_save_or_close(self):
         with patch.object(ui.QDesktopServices, 'openUrl', return_value=True) as open_url:
             dialog = ui.Settings(DEFAULTS.copy())

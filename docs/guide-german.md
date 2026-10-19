@@ -42,7 +42,7 @@ automatischen Fehler-Popups. Zum Beenden das Tray-Menü verwenden.
 ## Verhalten
 
 - Standardschwellen: 50, 75, 90, 95 Prozent Verbrauch; in den Einstellungen änderbar.
-- Ampel: Grün unter 75 %, Gelb ab 75 %, Rot ab 90 %. Farben sind unabhängig von
+- Ampel: Grün über 50 % verbleibend, Gelb ab 50 % verbleibend, Rot ab 20 % verbleibend (50 % bzw. 80 % Verbrauch). Farben sind unabhängig von
   individuell geänderten Meldeschwellen.
 - Mindestens 264 × 76 logische Pixel, Breite je nach Sprache und Schrift; 28 Pixel sanftes Hinein-/Herausgleiten; vier Sekunden sichtbar.
 - Kein Ton, kein Tastaturfokus, keine Mausklicks abfangen. DPI-Skalierung durch Qt.
